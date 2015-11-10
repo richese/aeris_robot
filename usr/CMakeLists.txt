@@ -5,7 +5,11 @@ project(AERIS_USR_TARGETS)
 set(TARGETS tests)
 
 foreach(program ${TARGETS})
-    add_executable(${program} ${program}.c)
+    set(TARGET_HEADER "usr/${program}.h")
+    set(TARGET_SUZUHA_MAIN "${CMAKE_BINARY_DIR}/main_${program}.c")
+    configure_file("${CMAKE_SOURCE_DIR}/main.c.in" "${TARGET_SUZUHA_MAIN}")
+
+    add_executable(${program} ${program}.c ${TARGET_SUZUHA_MAIN})
     target_link_libraries(${program} lib_low_level suzuha_os lib_usr)
     set_target_properties(${program} PROPERTIES OUTPUT_NAME ${CMAKE_BINARY_DIR}/${program}.elf)
 
