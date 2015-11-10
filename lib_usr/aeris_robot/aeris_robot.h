@@ -4,6 +4,9 @@
 #include "../../device/device.h"
 #include "../../os/suzuha_os.h"
 
+#include "aeris_error.h"
+#include "aeris_util.h"
+
 
 /* Aeris robot motor definitions */
 #define AERIS_MOTORS_M1_GPIO_BASE       GPIOC
@@ -93,6 +96,7 @@
 
 /* Aeris surface sensor ids */
 #define AERIS_SURFACE_SENSORS_COUNT     ((u32)8)
+#define AERIS_SS_COUNT                  AERIS_SURFACE_SENSORS_COUNT
 
 #define AERIS_RGB_SS_FRONT_LEFT         ((u32)0)
 #define AERIS_RGB_SS_FRONT_LEFT_CENTER  ((u32)1)

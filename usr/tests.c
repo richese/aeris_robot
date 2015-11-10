@@ -1,212 +1,134 @@
 #include "tests.h"
-// #include "../lib_usr/robot/robot.h"
-// #include "../lib_usr/aeris_robot/aeris_robot.h"
+
 #include "../lib_usr/aeris_robot/aeris_robot.h"
-#include "../lib_usr/aeris_robot/aeris_tests.h"
 
 
-thread_stack_t thread_01_stack[THREAD_STACK_SIZE];
-thread_stack_t thread_02_stack[THREAD_STACK_SIZE];
-thread_stack_t thread_03_stack[THREAD_STACK_SIZE];
+u32 g_stop_test = 0;
 
 
-void thread_01();
-void thread_02();
-void thread_03();
-
-void thread_01()
-{
-	while (1)
-	{
-		led_on(LED_2);
-		printf_("thread 1\n");
-		printf_("creating child thread\n");
-
-		u32 thread_id = create_thread(thread_02, thread_02_stack, sizeof(thread_02_stack), PRIORITY_MAX);
-
-		if (thread_id == THREAD_CREATING_ERROR)
-			printf_("thread creating error\n");
-		else
-		{
-			printf_("waiting for thread %u done\n", thread_id);
-			join(thread_id);
-			printf_("done\n");
-		}
-
-		led_off(LED_2);
-		timer_delay_ms(500);
-	}
-}
-
-void thread_02()
-{
-	u32 i;
-	for (i = 0; i < 10; i++)
-	{
-		printf_("another child thread, res %u\n", i);
-		//timer_delay_ms(20);
-	}
-}
-
-
-void thread_03()
-{
-	while (1)
-	{
-		printf_("periodic thread\n");
-		timer_delay_ms(100);
-	}
-}
-
-void main_thread()
+void
+main_thread()
 {
 	printf_(OS_WELCOME_MESSAGE);
 
 	aeris_init();
 
-	// aeris_imu_test();
-	// aeris_motor_test();
-	aeris_surface_sensors_test();
-	// aeris_line_folower_test();
+	u32 current_test = 0;
+	u32 thread_id = 0;
 
+	while (1) {
+		g_stop_test = 0;
 
-	while (1)
-	{
+		switch (current_test) {
+		case 0:
+			create_thread(ss_test_thread, test_thread_stack,
+				          sizeof(test_thread_stack), PRIORITY_MAX);
+			break;
 
+		case 1:
+			create_thread(imu_test_thread, test_thread_stack,
+				          sizeof(test_thread_stack), PRIORITY_MAX);
+			break;
+
+		case 2:
+			create_thread(ss_error_test_thread, test_thread_stack,
+				          sizeof(test_thread_stack), PRIORITY_MAX);
+			break;
+		case 3:
+			create_thread(motor_test_thread, test_thread_stack,
+				          sizeof(test_thread_stack), PRIORITY_MAX);
+			break;
+
+		default:
+			aeris_error(2);
+		}
+
+		while (aeris_read_key()) yield();
+		g_stop_test = 1;
+		join(thread_id);
+		current_test = (current_test + 1) % TEST_COUNT;
 	}
 
-	//robot_init();
-
-/*
-	create_thread(thread_01, thread_01_stack, sizeof(thread_01_stack), PRIORITY_MAX);
-	create_thread(thread_03, thread_03_stack, sizeof(thread_03_stack), PRIORITY_MAX);
-*/
-	//robot_main();
+	aeris_error(3);
 }
 
-
-/*
-void julia_set(u32 iterations_max, float cr_)
+void
+ss_test_thread()
 {
-	float cr = -0.8;
-	float ci = 0.156;
+	printf_("Starting surface sensors test.\n");
 
-	cr = cr_;
-	ci = 1.0 - cr_*cr_;
+	while(!g_stop_test) {
+		g_aeris_robot.rgbw.g = 1;
+		aeris_set_rgbw();
 
-	if (cr_ < 0.0)
-		ci = -ci;
+		aeris_read_surface_sensors();
 
-	u32 j, i;
-	for(j = 0; j < LCD_VERTICAL_MAX; j++)
-	{
-		for(i = 0; i < LCD_HORIZONTAL_MAX; i++)
-		{
+		g_aeris_robot.rgbw.g = 0;
+		aeris_set_rgbw();
 
+		aeris_print_ss_data();
+		printf_("\n\n" );
 
-			float zr = ((1.0*i)/LCD_HORIZONTAL_MAX - 0.5)*4.0;
-			float zi = ((1.0*j)/LCD_VERTICAL_MAX - 0.5)*4.0;
-
-			float zr_ = 0.0;
-			float zi_ = 0.0;
-
-			u32 iterations = iterations_max;
-			do
-			{
-				zr_ = zr*zr - zi*zi + cr;
-				zi_ = 2.0*zr*zi + ci;
-
-				zr = zr_;
-				zi = zi_;
-
-				iterations--;
-			}
-			while (((zr*zr + zi*zi) < 2.0) && (iterations != 0));
-
-			if (iterations == 0)
-				lcd_sharp96_put_pixel(i, j, 1);
-			else
-				lcd_sharp96_put_pixel(i, j, 0);
-		}
+		timer_delay_ms(100);
 	}
 }
 
-u32 iterations_max;
-
-void lcd_demo()
+void
+imu_test_thread()
 {
-	u32 i, max_iters = 100;
+	printf_("Starting imu test.\n");
 
+	while(!g_stop_test) {
+		g_aeris_robot.rgbw.g = 1;
+		aeris_set_rgbw();
 
-	lcd_sharp96_clear(0xff);
-	lcd_sharp96_put_string(OS_WELCOME_MESSAGE);
-	lcd_sharp96_flush();
+		aeris_read_imu();
 
-	timer_delay_ms(4000);
+		g_aeris_robot.rgbw.g = 0;
+		aeris_set_rgbw();
 
-	time_t time_total = 0;
-	time_t time_max = 0;
-	time_t time_min = 1000000;
+		aeris_print_imu_data();
+		printf_("\n\n");
 
-	for (i = 0; i < (max_iters/4); i++)
-	{
-		float cr = ((i*2.0)/max_iters) - 1.0;
-
-		time_t tstart = timer_get_time();
-		julia_set(iterations_max, cr);
-		time_t tstop = timer_get_time();
-
-		time_t dif = tstop - tstart;
-
-		time_total+= dif;
-
-		if (dif > time_max)
-			time_max = dif;
-
-		if (dif < time_min)
-			time_min = dif;
-
-		lcd_sharp96_flush();
+		timer_delay_ms(100);
 	}
-
-	printf_("%u %u %u %u\n", iterations_max, time_total, time_min, time_max);
-
-	iterations_max++;
-
-	if (iterations_max > 40)
-		iterations_max = 4;
 }
 
-*/
+void
+ss_error_test_thread()
+{
+	printf_("Starting surface sensors error rate test.\n");
 
-
-	/*
-	st7781_init();
-
-	u32 x = 0;
-	u32 y = 0;
-	u32 r = 150;
-	u32 g = 100;
-	u32 b = 50;
-
-	while (1)
-	{
-		st7781_put_pixel(x, y, r, g, b);
-
-		x++;
-		if (x > 100)
-		{
-			x = 0;
-			y++;
-			led_on(LED_3);
-		}
-
-		if (y > 100)
-		{
-			y = 0;
-		}
-
-		timer_delay_ms(2);
-		led_off(LED_3);
+	while(!g_stop_test) {
+		printf_("Not implemented yet.\n");
+		timer_delay_ms(1000);
 	}
-*/
+}
+
+void
+motor_test_thread()
+{
+	printf_("Starting motor test.\n");
+
+	while (!g_stop_test) {
+		g_aeris_robot.rgbw.b = 1;
+		aeris_set_rgbw();
+
+		g_aeris_robot.motors.left = 40;
+		g_aeris_robot.motors.right = 40;
+		aeris_set_motors();
+		printf_("speed = [%d, %d]\n", g_aeris_robot.motors.left,
+		        g_aeris_robot.motors.right);
+		timer_delay_ms(800);
+
+		g_aeris_robot.rgbw.b = 0;
+		aeris_set_rgbw();
+
+		g_aeris_robot.motors.left = 0;
+		g_aeris_robot.motors.right = 0;
+		printf_("speed = [%d, %d]\n", g_aeris_robot.motors.left,
+		        g_aeris_robot.motors.right);
+		aeris_set_motors();
+		timer_delay_ms(800);
+	}
+}

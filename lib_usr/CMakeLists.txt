@@ -3,7 +3,7 @@ project(AERIS_LIB_USR)
 
 set(AERIS_LIB_USR_SOURCES
     aeris_robot/aeris_robot.c
-    aeris_robot/aeris_tests.c
+    aeris_robot/aeris_util.c
     aeris_robot/line_sensor.c
     lsm9ds0.c
     math.c
