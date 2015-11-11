@@ -21,21 +21,21 @@ main_thread()
 		g_stop_test = 0;
 
 		switch (current_test) {
-		case 0:
+		case TEST_SURFACE_SENSOR:
 			create_thread(ss_test_thread, test_thread_stack,
 				          sizeof(test_thread_stack), PRIORITY_MAX);
 			break;
 
-		case 1:
+		case TEST_IMU_DATA:
 			create_thread(imu_test_thread, test_thread_stack,
 				          sizeof(test_thread_stack), PRIORITY_MAX);
 			break;
 
-		case 2:
+		case TEST_SURFACE_SENSOR_ERRORS:
 			create_thread(ss_error_test_thread, test_thread_stack,
 				          sizeof(test_thread_stack), PRIORITY_MAX);
 			break;
-		case 3:
+		case TEST_MOTORS:
 			create_thread(motor_test_thread, test_thread_stack,
 				          sizeof(test_thread_stack), PRIORITY_MAX);
 			break;

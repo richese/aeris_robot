@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.8)
 project(AERIS_USR_TARGETS)
 
 
-set(TARGETS tests)
+set(TARGETS template tests line_follower)
 
 foreach(program ${TARGETS})
     set(TARGET_HEADER "usr/${program}.h")
