@@ -4,7 +4,7 @@ project(LIB_LOW_LEVEL_STM32F4)
 file(GLOB_RECURSE LIB_LOW_LEVEL_STM32F4_SOURCES *.c)
 
 add_library(lib_low_level STATIC "${LIB_LOW_LEVEL_STM32F4_SOURCES}")
-set_target_properties(lib_low_level PROPERTIES OUTPUT_NAME _lowlevel)
+set_target_properties(lib_low_level PROPERTIES OUTPUT_NAME _low_level)
 
 target_compile_options(lib_low_level PUBLIC
     "-mcpu=cortex-m4"

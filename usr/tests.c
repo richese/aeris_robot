@@ -1,6 +1,7 @@
 #include "tests.h"
 
-#include "../lib_usr/aeris_robot/aeris_robot.h"
+#include "os/suzuha_os.h"
+#include "lib_usr/aeris_robot/aeris_robot.h"
 
 
 u32 g_stop_test = 0;

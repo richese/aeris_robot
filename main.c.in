@@ -1,5 +1,5 @@
-#include "../os/suzuha_os.h"
-#include "../@TARGET_HEADER@"
+#include "os/suzuha_os.h"
+#include "@TARGET_HEADER@"
 
 
 void mem_info_print()

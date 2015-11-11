@@ -1,7 +1,7 @@
 #ifndef _TESTS_H_
 #define _TESTS_H_
 
-#include "../os/suzuha_os.h"
+#include "os/suzuha_os.h"
 
 
 #define THREAD_STACK_SIZE           (128)

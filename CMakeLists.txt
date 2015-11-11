@@ -36,6 +36,7 @@ link_libraries(
     "-mthumb"
     "-Wl,--gc-sections"
 )
+include_directories(${CMAKE_SOURCE_DIR})
 
 add_subdirectory(device)
 add_subdirectory(os)
