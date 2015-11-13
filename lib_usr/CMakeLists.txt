@@ -9,7 +9,5 @@ set(AERIS_LIB_USR_SOURCES
     math.c
 )
 
-add_library(lib_usr STATIC "${AERIS_LIB_USR_SOURCES}")
+add_library(lib_usr OBJECT "${AERIS_LIB_USR_SOURCES}")
 set_target_properties(lib_usr PROPERTIES OUTPUT_NAME _usr)
-
-target_link_libraries(lib_low_level)

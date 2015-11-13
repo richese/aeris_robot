@@ -31,10 +31,22 @@ add_compile_options(
 
     "-O2"
     "-Os"
+    "-mcpu=cortex-m4"
+    "-mthumb"
+    "-mfloat-abi=softfp"
+    "-mfpu=vfp"
+    "-fsingle-precision-constant"
 )
 link_libraries(
     "-mthumb"
     "-Wl,--gc-sections"
+    "-mcpu=cortex-m4"
+    "-mthumb"
+    "-mfloat-abi=softfp"
+    "-mfpu=vfp"
+    "-fsingle-precision-constant"
+
+    "-T${CMAKE_SOURCE_DIR}/device/stm32f4/ldscript.ld"
 )
 include_directories(${CMAKE_SOURCE_DIR})
 

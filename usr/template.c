@@ -17,10 +17,12 @@ main_thread()
 	while (1) {
 		g_aeris_robot.rgbw.r = 1;
 		aeris_set_rgbw();
+		printf_("Red: On\n");
 		timer_delay_ms(5000);
 
 		g_aeris_robot.rgbw.r = 0;
 		aeris_set_rgbw();
+		printf_("Red: Off\n");
 		timer_delay_ms(2500);
 	}
 }
@@ -31,10 +33,12 @@ led_blink_thread()
 	while (1) {
 		g_aeris_robot.rgbw.g = 1;
 		aeris_set_rgbw();
+		printf_("Green: On\n");
 		timer_delay_ms(1000);
 
 		g_aeris_robot.rgbw.g = 0;
 		aeris_set_rgbw();
+		printf_("Green: Off\n");
 		timer_delay_ms(1000);
 	}
 }
