@@ -4,22 +4,37 @@
 #include "os/suzuha_os.h"
 
 
-#define THREAD_STACK_SIZE           (128)
-#define TEST_COUNT                  (4)
+/* Application definitions required by os */
 
-enum {
-    TEST_SURFACE_SENSOR = 0,
-    TEST_IMU_DATA,
-    TEST_SURFACE_SENSOR_ERRORS,
-    TEST_MOTORS,
-};
+#define MAIN_THREAD_CALLBACK        main_thread
+#define MAIN_THREAD_STACK           main_thread_stack
+#define MAIN_THREAD_STACK_SIZE      sizeof(main_thread_stack)
+#define MAIN_THREAD_PRIORITY        (PRIORITY_MAX + 2)
 
-
-thread_stack_t main_thread_stack[THREAD_STACK_SIZE];
-thread_stack_t test_thread_stack[THREAD_STACK_SIZE];
-
-
+thread_stack_t main_thread_stack[128];
 void main_thread();
+
+
+/* Other */
+
+#define USER_THREAD_STACK_SIZE      (256)
+
+#define TEST_SURFACE_SENSOR         (0)
+#define TEST_SURFACE_SENSOR_ERRORS  (1)
+#define TEST_IMU                    (2)
+#define TEST_MOTORS                 (3)
+
+#define TEST_COUNT                  (4)
+#define DEFAULT_TEST                TEST_SURFACE_SENSOR
+
+
+#define SS_ERROR_TIMER_ID           (0)
+#define SS_ERROR_TIMER_PERIOD       (4096)
+#define SS_ERROR_TRESHOLD_LOW       (0x0000)
+#define SS_ERROR_TRESHOLD_HIGH      (0xFFFF)
+
+
+
 void ss_test_thread();
 void imu_test_thread();
 void ss_error_test_thread();

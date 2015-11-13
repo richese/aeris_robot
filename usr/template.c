@@ -4,11 +4,13 @@
 #include "lib_usr/aeris_robot/aeris_robot.h"
 
 
+thread_stack_t led_blink_thread_stack[USER_THREAD_STACK_SIZE];
+
+
 void
 main_thread()
 {
 	printf_(OS_WELCOME_MESSAGE);
-
 	aeris_init();
 
 	create_thread(led_blink_thread, led_blink_thread_stack,

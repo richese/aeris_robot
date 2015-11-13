@@ -11,6 +11,7 @@ main_thread()
 	printf_(OS_WELCOME_MESSAGE);
 	aeris_init();
 
+	event_timer_set_period(DEBUG_MSG_TIMER_ID, DEBUG_MSG_TIMER_PERIOD);
 
     float e0 = 0.0;
     float e1 = 0.0;
@@ -43,5 +44,10 @@ main_thread()
         g_aeris_robot.motors.left = left_speed;
         g_aeris_robot.motors.right = right_speed;
         aeris_set_motors();
+
+		if (event_timer_get_flag(DEBUG_MSG_TIMER_ID)) {
+			event_timer_clear_flag(DEBUG_MSG_TIMER_ID);
+			aeris_print_ss_data();
+		}
     }
 }

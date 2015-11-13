@@ -4,15 +4,21 @@
 #include "os/suzuha_os.h"
 
 
-#define THREAD_STACK_SIZE	128
+/* Application definitions required by os */
 
-/* Required */
-thread_stack_t main_thread_stack[THREAD_STACK_SIZE];
+#define MAIN_THREAD_CALLBACK        main_thread
+#define MAIN_THREAD_STACK           main_thread_stack
+#define MAIN_THREAD_STACK_SIZE      sizeof(main_thread_stack)
+#define MAIN_THREAD_PRIORITY        (PRIORITY_MAX + 2)
 
-thread_stack_t led_blink_thread_stack[THREAD_STACK_SIZE];
-
-/* Required */
+thread_stack_t main_thread_stack[128];
 void main_thread();
+
+
+/* Other */
+
+#define USER_THREAD_STACK_SIZE	     (128)
+
 
 void led_blink_thread();
 

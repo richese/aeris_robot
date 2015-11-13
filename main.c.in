@@ -26,7 +26,8 @@ int main(void)
 	lib_os_init();
 	mem_info_print();
 
-	create_thread(main_thread, main_thread_stack, sizeof(main_thread_stack), PRIORITY_MAX);
+	create_thread(MAIN_THREAD_CALLBACK, MAIN_THREAD_STACK,
+	              MAIN_THREAD_STACK_SIZE, MAIN_THREAD_PRIORITY);
 	kernel_start();
 
 	return 0;
