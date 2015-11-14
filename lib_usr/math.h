@@ -1,9 +1,9 @@
 #ifndef _MATH_H_
 #define _MATH_H_
 
-#define mint	float
+#define mint                            float
 
-#define PI_		(mint)3.141592654
+#define PI_                             ((mint)3.141592654)
 
 
 mint m_abs(mint value);

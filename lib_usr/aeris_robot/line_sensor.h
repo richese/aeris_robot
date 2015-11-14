@@ -4,7 +4,7 @@
 #include "aeris_robot.h"
 
 
-#define LINE_SENSOR_TRESHOLD (u32)500
+#define LINE_SENSOR_TRESHOLD            ((u32)500)
 
 
 struct sLinePosition

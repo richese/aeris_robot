@@ -26,19 +26,19 @@
 
 
 /* Aeris RGB led definitions */
-#define AERIS_RGB_GPIO_BASE	            GPIOB
+#define AERIS_RGB_GPIO_BASE             GPIOB
 
-#define AERIS_RGB_LED_1	                (1<<4)
-#define AERIS_RGB_LED_2	                (1<<5)
-#define AERIS_RGB_LED_3	                (1<<6)
+#define AERIS_RGB_LED_1                 (1<<4)
+#define AERIS_RGB_LED_2                 (1<<5)
+#define AERIS_RGB_LED_3                 (1<<6)
 
-#define AERIS_RGB_LED_R	                AERIS_RGB_LED_1
-#define AERIS_RGB_LED_G	                AERIS_RGB_LED_2
-#define AERIS_RGB_LED_B	                AERIS_RGB_LED_3
+#define AERIS_RGB_LED_R                 AERIS_RGB_LED_1
+#define AERIS_RGB_LED_G                 AERIS_RGB_LED_2
+#define AERIS_RGB_LED_B                 AERIS_RGB_LED_3
 
 /* white leds paired with surface sensors */
 #define AERIS_RGB_LED_W_BASE            GPIOC
-#define AERIS_RGB_LED_W	                (1<<5)
+#define AERIS_RGB_LED_W                 (1<<5)
 
 
 /* Aeris push button definitions */
@@ -55,44 +55,44 @@
 #define AERIS_PCA9548_ADDRESS           (0xE0)
 
 /*APDS-9950 RGB sensor I2C address */
-#define AERIS_RGB_SENSOR_ADDRESS		(0x39<<1)
+#define AERIS_RGB_SENSOR_ADDRESS        (0x39<<1)
 
-#define AERIS_RGB_SENSOR_COMMAND	    (1<<7)
+#define AERIS_RGB_SENSOR_COMMAND        (1<<7)
 
-#define AERIS_RGB_SENSOR_ENABLE			(0x00)
-#define AERIS_RGB_SENSOR_ATIME			(0x01)
-#define AERIS_RGB_SENSOR_WTIME			(0x03)
-#define AERIS_RGB_SENSOR_AILTL			(0x04)
-#define AERIS_RGB_SENSOR_AILTH			(0x05)
+#define AERIS_RGB_SENSOR_ENABLE         (0x00)
+#define AERIS_RGB_SENSOR_ATIME          (0x01)
+#define AERIS_RGB_SENSOR_WTIME          (0x03)
+#define AERIS_RGB_SENSOR_AILTL          (0x04)
+#define AERIS_RGB_SENSOR_AILTH          (0x05)
 
-#define AERIS_RGB_SENSOR_AIHTL			(0x06)
-#define AERIS_RGB_SENSOR_AIHTH			(0x07)
+#define AERIS_RGB_SENSOR_AIHTL          (0x06)
+#define AERIS_RGB_SENSOR_AIHTH          (0x07)
 
-#define AERIS_RGB_SENSOR_PILTL			(0x08)
-#define AERIS_RGB_SENSOR_PILTH			(0x09)
+#define AERIS_RGB_SENSOR_PILTL          (0x08)
+#define AERIS_RGB_SENSOR_PILTH          (0x09)
 
-#define AERIS_RGB_SENSOR_PIHTL			(0x0A)
-#define AERIS_RGB_SENSOR_PIHTH			(0x0B)
+#define AERIS_RGB_SENSOR_PIHTL          (0x0A)
+#define AERIS_RGB_SENSOR_PIHTH          (0x0B)
 
-#define AERIS_RGB_SENSOR_PERS			(0x0C)
-#define AERIS_RGB_SENSOR_CONFIG			(0x0D)
-#define AERIS_RGB_SENSOR_PPULSE			(0x0E)
+#define AERIS_RGB_SENSOR_PERS           (0x0C)
+#define AERIS_RGB_SENSOR_CONFIG         (0x0D)
+#define AERIS_RGB_SENSOR_PPULSE         (0x0E)
 
-#define AERIS_RGB_SENSOR_CONTROL		(0x0F)
-#define AERIS_RGB_SENSOR_ID				(0x12)
+#define AERIS_RGB_SENSOR_CONTROL        (0x0F)
+#define AERIS_RGB_SENSOR_ID             (0x12)
 
-#define AERIS_RGB_SENSOR_STATUS 		(0x13)
+#define AERIS_RGB_SENSOR_STATUS         (0x13)
 
-#define AERIS_RGB_SENSOR_CDATAL			(0x14)
-#define AERIS_RGB_SENSOR_CDATAH			(0x15)
-#define AERIS_RGB_SENSOR_RDATAL			(0x16)
-#define AERIS_RGB_SENSOR_RDATAH			(0x17)
-#define AERIS_RGB_SENSOR_GDATAL			(0x18)
-#define AERIS_RGB_SENSOR_GDATAH			(0x19)
-#define AERIS_RGB_SENSOR_BDATAL			(0x1A)
-#define AERIS_RGB_SENSOR_BDATAH			(0x1B)
-#define AERIS_RGB_SENSOR_PDATAL 		(0x1C)
-#define AERIS_RGB_SENSOR_PDATAH 		(0x1D)
+#define AERIS_RGB_SENSOR_CDATAL         (0x14)
+#define AERIS_RGB_SENSOR_CDATAH         (0x15)
+#define AERIS_RGB_SENSOR_RDATAL         (0x16)
+#define AERIS_RGB_SENSOR_RDATAH         (0x17)
+#define AERIS_RGB_SENSOR_GDATAL         (0x18)
+#define AERIS_RGB_SENSOR_GDATAH         (0x19)
+#define AERIS_RGB_SENSOR_BDATAL         (0x1A)
+#define AERIS_RGB_SENSOR_BDATAH         (0x1B)
+#define AERIS_RGB_SENSOR_PDATAL         (0x1C)
+#define AERIS_RGB_SENSOR_PDATAH         (0x1D)
 
 /* Aeris surface sensor ids */
 #define AERIS_SURFACE_SENSORS_COUNT     ((u32)8)

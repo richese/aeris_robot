@@ -35,32 +35,32 @@ u32 lsm9ds0_init()
 
 
     //gyrosocpe init
-        //enable all axis, power up, maximum data output rate - 100Hz
-        i2c_write_reg(LSM9DS0_GYRO_ADDRESS, LSM9DS0_CTRL_REG1_G, (1<<7)|(1<<6)|(1<<5)|(1<<4)|
-                                                                (1<<3)|(1<<2)|(1<<1)|(1<<0));
+    //enable all axis, power up, maximum data output rate - 100Hz
+    i2c_write_reg(LSM9DS0_GYRO_ADDRESS, LSM9DS0_CTRL_REG1_G, (1<<7)|(1<<6)|(1<<5)|(1<<4)|
+                                (1<<3)|(1<<2)|(1<<1)|(1<<0));
 
-        //2000DPS range
-        i2c_write_reg(LSM9DS0_GYRO_ADDRESS, LSM9DS0_CTRL_REG4_G, (1<<4)|(1<<3));
+    //2000DPS range
+    i2c_write_reg(LSM9DS0_GYRO_ADDRESS, LSM9DS0_CTRL_REG4_G, (1<<4)|(1<<3));
 
 
     //accelerometer init
-        i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG0_XM, 0);
+    i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG0_XM, 0);
 
-        //enable all axis, data rate 100Hz
-        i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG1_XM, (1<<6)|(1<<5)|(1<<2)|(1<<1)|(1<<0));
+    //enable all axis, data rate 100Hz
+    i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG1_XM, (1<<6)|(1<<5)|(1<<2)|(1<<1)|(1<<0));
 
-        //2g full range
-        i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG2_XM, 0);
+    //2g full range
+    i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG2_XM, 0);
 
     //magnetometer init
-        // enable temperature sensor, high resolution, 100Hz outout rate
-        i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG5_XM, (1<<7)|(1<<6)|(1<<5)|(1<<4)|(1<<2));
+    // enable temperature sensor, high resolution, 100Hz outout rate
+    i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG5_XM, (1<<7)|(1<<6)|(1<<5)|(1<<4)|(1<<2));
 
-        //2 guass range
-        i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG6_XM, 0);
+    //2 guass range
+    i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG6_XM, 0);
 
-        //continuous normal mode
-        i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG7_XM, 1<<7);
+    //continuous normal mode
+    i2c_write_reg(LSM9DS0_ACC_MAG_ADDRESS, LSM9DS0_CTRL_REG7_XM, 1<<7);
 
     lsm9ds0_read();
 
