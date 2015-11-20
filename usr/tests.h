@@ -29,10 +29,11 @@ void main_thread();
 
 
 #define SS_ERROR_TIMER_ID               (0)
-#define SS_ERROR_TIMER_PERIOD           (4096)
+#define SS_ERROR_TIMER_PERIOD           (2*4096)
 #define SS_ERROR_TRESHOLD_LOW           (0x0000)
 #define SS_ERROR_TRESHOLD_HIGH          (0xFFFF)
-
+#define ss_has_low_error(v, t)          ((v <= t) ? 1 : 0)
+#define ss_has_high_error(v, t)         ((v >= t) ? 1 : 0)
 
 
 void ss_test_thread();
