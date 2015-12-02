@@ -371,7 +371,6 @@ aeris_init_surface_sensor(u32 sensor_id)
 {
     /* reset switch */
     GPIO_ResetBits(AERIS_I2C_RESET_GPIO_BASE, AERIS_I2C_RESET);
-
     timer_delay_loops(10000);
     GPIO_SetBits(AERIS_I2C_RESET_GPIO_BASE, AERIS_I2C_RESET);
     timer_delay_loops(10000);
@@ -410,7 +409,6 @@ aeris_read_surface_sensor(u32 sensor_id)
 {
     /* reset switch */
     GPIO_ResetBits(AERIS_I2C_RESET_GPIO_BASE, AERIS_I2C_RESET);
-
     timer_delay_loops(10000);
     GPIO_SetBits(AERIS_I2C_RESET_GPIO_BASE, AERIS_I2C_RESET);
     timer_delay_loops(10000);

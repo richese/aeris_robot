@@ -17,7 +17,7 @@ void main_thread();
 
 /* Other */
 
-#define USER_THREAD_STACK_SIZE          (256)
+#define USER_THREAD_STACK_SIZE          (512)
 
 #define TEST_SURFACE_SENSOR             (0)
 #define TEST_SURFACE_SENSOR_ERRORS      (1)
