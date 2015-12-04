@@ -78,7 +78,7 @@ ss_test_thread()
         aeris_print_ss_data();
         printf_("\n");
 
-        timer_delay_ms(10);
+        timer_delay_ms(50);
     }
 
     g_aeris_robot.rgbw.w = 0;
@@ -107,22 +107,6 @@ imu_test_thread()
     }
 }
 
-static void
-ss_error_print(u32 low_error[AERIS_SS_COUNT][4],
-               u32 high_error[AERIS_SS_COUNT][4], u32 total_tests)
-{
-    printf_("test_count=%u\n", total_tests);
-    for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
-        printf_("[%u %u %u %u] ",
-                low_error[i][0], low_error[i][1],
-                low_error[i][2], low_error[i][3]);
-        printf_("[%u %u %u %u]\n",
-                high_error[i][0], high_error[i][1],
-                high_error[i][2], high_error[i][3]);
-    }
-    printf_("\n\n");
-}
-
 void
 ss_error_test_thread()
 {
@@ -130,17 +114,15 @@ ss_error_test_thread()
 
     struct sAerisSurfaceSensors *sensor = &g_aeris_robot.surface_sensors;
     u32 total_tests = 0;
-    u32 high_error[AERIS_SS_COUNT][4];
-    u32 low_error[AERIS_SS_COUNT][4];
+    u32 reset_cnt[AERIS_SS_COUNT];
+    u32 error_cnt[AERIS_SS_COUNT][4]; // 128 bytes
+
+    for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
+        reset_cnt[i] = 0;
+        for (u32 j = 0; j < 4; j++) error_cnt[i][j] = 0;
+    }
 
     timer_delay_ms(1000);
-
-    for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
-        for (u32 j = 0; j < 4; j++) high_error[i][j] = 0;
-    }
-    for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
-        for (u32 j = 0; j < 4; j++) low_error[i][j] = 0;
-    }
 
     g_aeris_robot.rgbw.w = 1;
     aeris_set_rgbw();
@@ -148,23 +130,36 @@ ss_error_test_thread()
     event_timer_set_period(SS_ERROR_TIMER_ID, SS_ERROR_TIMER_PERIOD);
 
     while(!g_stop_test) {
-        aeris_read_surface_sensors();
         total_tests++;
 
         for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
-            high_error[i][0] += ss_has_high_error(sensor->r[i], SS_ERROR_TRESHOLD_HIGH);
-            high_error[i][1] += ss_has_high_error(sensor->g[i], SS_ERROR_TRESHOLD_HIGH);
-            high_error[i][2] += ss_has_high_error(sensor->b[i], SS_ERROR_TRESHOLD_HIGH);
-            high_error[i][3] += ss_has_high_error(sensor->w[i], SS_ERROR_TRESHOLD_HIGH);
-            low_error[i][0] += ss_has_low_error(sensor->r[i], SS_ERROR_TRESHOLD_LOW);
-            low_error[i][1] += ss_has_low_error(sensor->g[i], SS_ERROR_TRESHOLD_LOW);
-            low_error[i][2] += ss_has_low_error(sensor->b[i], SS_ERROR_TRESHOLD_LOW);
-            low_error[i][3] += ss_has_low_error(sensor->w[i], SS_ERROR_TRESHOLD_LOW);
+            aeris_read_surface_sensor(i);
+            if (ss_has_high_error(sensor->r[i]) ||
+                ss_has_high_error(sensor->g[i]) ||
+                ss_has_high_error(sensor->b[i]) ||
+                ss_has_high_error(sensor->w[i])) {
+
+                aeris_init_surface_sensor(i);
+                aeris_read_surface_sensor(i);
+                reset_cnt[i] += 1;
+            }
+
+            error_cnt[i][0] += ss_has_high_error(sensor->r[i]);
+            error_cnt[i][1] += ss_has_high_error(sensor->g[i]);
+            error_cnt[i][2] += ss_has_high_error(sensor->b[i]);
+            error_cnt[i][3] += ss_has_high_error(sensor->w[i]);
         }
 
         if (event_timer_get_flag(SS_ERROR_TIMER_ID)) {
             event_timer_clear_flag(SS_ERROR_TIMER_ID);
-            ss_error_print(low_error, high_error, total_tests);
+
+            printf_("test_count=%u\n", total_tests);
+            for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
+                printf_("[%u] [%u %u %u %u]\n", reset_cnt[i],
+                        error_cnt[i][0], error_cnt[i][1],
+                        error_cnt[i][2], error_cnt[i][3]);
+            }
+            printf_("\n\n");
         }
         timer_delay_ms(1);
     }

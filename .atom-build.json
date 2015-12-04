@@ -1,0 +1,27 @@
+{
+  "cmd": "make",
+  "name": "Build",
+  "sh": true,
+  "cwd": "{PROJECT_PATH}/build",
+  "errorMatch": [
+    "(?<file>[./ \\w]+):(?<line>\\d+):(?<col>\\d+):"
+  ],
+  "keymap": "f5",
+  "targets": {
+    "Rebuild": {
+      "cmd": "make -B",
+      "sh": true,
+      "cwd": "{PROJECT_PATH}/build",
+      "errorMatch": [
+        "(?<file>[./ \\w]+):(?<line>\\d+):(?<col>\\d+):"
+      ],
+      "keymap": "f6"
+    },
+    "Flash: Tests": {
+      "cmd": "./stm32f_write_dfu_usb.sh build/tests.bin",
+      "sh": true,
+      "cwd": "{PROJECT_PATH}",
+      "keymap": "f7"
+    }
+  }
+}
