@@ -23,7 +23,8 @@ void timer_delay_ms(u32 ms);
 
 /*
 	set event timer period
-	count_down_time = (period/4096Hz) [s]
+    [period] = [ticks], [time] = [s]
+    period = time * 10000
 */
 void event_timer_set_period(u32 id, u16 period);
 
