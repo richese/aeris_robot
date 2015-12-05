@@ -1,7 +1,8 @@
 #include "aeris_robot.h"
-
 #include "aeris_error.h"
-#include "../lsm9ds0.h"
+
+#include "lib_usr/lsm9ds0.h"
+#include "lib_usr/pca9548.h"
 
 
 u32
@@ -164,20 +165,8 @@ aeris_init()
     g_aeris_robot.rgbw.w = 1;
     aeris_set_rgbw();
 
-    /* init i2c switch reset pin */
-    GPIO_InitStructure.GPIO_Pin = AERIS_I2C_RESET;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-
-    GPIO_Init(AERIS_I2C_RESET_GPIO_BASE, &GPIO_InitStructure);
-
-    GPIO_ResetBits(AERIS_I2C_RESET_GPIO_BASE, AERIS_I2C_RESET);
-
-    timer_delay_loops(10000);
-    GPIO_SetBits(AERIS_I2C_RESET_GPIO_BASE, AERIS_I2C_RESET);
-    timer_delay_loops(10000);
+    /* init i2c switch */
+    pca9548_init();
 
     if (aeris_init_surface_sensor(AERIS_RGB_SS_FRONT_LEFT) != 0)
         aeris_error(10);
@@ -369,19 +358,7 @@ aeris_read_key()
 u32
 aeris_init_surface_sensor(u32 sensor_id)
 {
-    /* reset switch */
-    GPIO_ResetBits(AERIS_I2C_RESET_GPIO_BASE, AERIS_I2C_RESET);
-    timer_delay_loops(10000);
-    GPIO_SetBits(AERIS_I2C_RESET_GPIO_BASE, AERIS_I2C_RESET);
-    timer_delay_loops(10000);
-
-    /* select channel via i2c switch */
-    i2cStart();
-    i2cWrite(AERIS_PCA9548_ADDRESS);
-    i2cWrite((1<<sensor_id));
-    i2cStop();
-
-    timer_delay_loops(1000);
+    pca9548_set_bus(sensor_id);
 
     i2c_write_reg(AERIS_RGB_SENSOR_ADDRESS, AERIS_RGB_SENSOR_COMMAND|AERIS_RGB_SENSOR_ATIME, 0xFF);             /*2.4ms time*/
     i2c_write_reg(AERIS_RGB_SENSOR_ADDRESS, AERIS_RGB_SENSOR_COMMAND|AERIS_RGB_SENSOR_WTIME, 0xFF);             /*2.4ms time*/
@@ -407,19 +384,7 @@ aeris_init_surface_sensor(u32 sensor_id)
 void
 aeris_read_surface_sensor(u32 sensor_id)
 {
-    /* reset switch */
-    GPIO_ResetBits(AERIS_I2C_RESET_GPIO_BASE, AERIS_I2C_RESET);
-    timer_delay_loops(10000);
-    GPIO_SetBits(AERIS_I2C_RESET_GPIO_BASE, AERIS_I2C_RESET);
-    timer_delay_loops(10000);
-
-    /* select channel via i2c switch */
-    i2cStart();
-    i2cWrite(AERIS_PCA9548_ADDRESS);
-    i2cWrite((1<<sensor_id));
-    i2cStop();
-
-    timer_delay_loops(1000);
+    pca9548_set_bus(sensor_id);
 
     i2cStart();
     i2cWrite(AERIS_RGB_SENSOR_ADDRESS);

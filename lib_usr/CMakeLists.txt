@@ -7,6 +7,7 @@ set(AERIS_LIB_USR_SOURCES
     aeris_robot/line_sensor.c
     lsm9ds0.c
     math.c
+    pca9548.c
 )
 
 add_library(lib_usr OBJECT "${AERIS_LIB_USR_SOURCES}")
