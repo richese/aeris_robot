@@ -1,6 +1,7 @@
 #include "aeris_robot.h"
 #include "aeris_error.h"
 
+#include "lib_usr/apds9950.h"
 #include "lib_usr/lsm9ds0.h"
 #include "lib_usr/pca9548.h"
 
@@ -358,18 +359,12 @@ aeris_read_key()
 u32
 aeris_init_surface_sensor(u32 sensor_id)
 {
+    u32 tmp;
+
     pca9548_set_bus(sensor_id);
 
-    i2c_write_reg(AERIS_RGB_SENSOR_ADDRESS, AERIS_RGB_SENSOR_COMMAND|AERIS_RGB_SENSOR_ATIME, 0xFF);             /*2.4ms time*/
-    i2c_write_reg(AERIS_RGB_SENSOR_ADDRESS, AERIS_RGB_SENSOR_COMMAND|AERIS_RGB_SENSOR_WTIME, 0xFF);             /*2.4ms time*/
-
-    i2c_write_reg(AERIS_RGB_SENSOR_ADDRESS, AERIS_RGB_SENSOR_COMMAND|AERIS_RGB_SENSOR_CONFIG, 0);               /*dont wait long*/
-    i2c_write_reg(AERIS_RGB_SENSOR_ADDRESS, AERIS_RGB_SENSOR_COMMAND|AERIS_RGB_SENSOR_ENABLE, (1<<1)|(1<<0));  /*power on, RGBC enable*/
-
-    /*
-    60x GAIN
-    */
-    i2c_write_reg(AERIS_RGB_SENSOR_ADDRESS, AERIS_RGB_SENSOR_COMMAND|AERIS_RGB_SENSOR_CONTROL, (1<<0)|(1<<1));
+    tmp = apds9950_rgbc_init();
+    if (tmp != 0) return 1;
 
     aeris_read_surface_sensor(sensor_id);
 
@@ -378,32 +373,19 @@ aeris_init_surface_sensor(u32 sensor_id)
         return 1;
 
     return 0;
- }
-
+}
 
 void
 aeris_read_surface_sensor(u32 sensor_id)
 {
+    struct sRgbcData data;
+
     pca9548_set_bus(sensor_id);
 
-    i2cStart();
-    i2cWrite(AERIS_RGB_SENSOR_ADDRESS);
-    i2cWrite(AERIS_RGB_SENSOR_COMMAND|AERIS_RGB_SENSOR_CDATAL|(1<<5));
+    apds9950_rgbc_read(&data);
 
-    i2cStart();
-    i2cWrite(AERIS_RGB_SENSOR_ADDRESS|0x01);
-
-    g_aeris_robot.surface_sensors.w[sensor_id] = i2cRead(1);
-    g_aeris_robot.surface_sensors.w[sensor_id]|= ((u16)i2cRead(1))<<8;
-
-    g_aeris_robot.surface_sensors.r[sensor_id] = i2cRead(1);
-    g_aeris_robot.surface_sensors.r[sensor_id]|= ((u16)i2cRead(1))<<8;
-
-    g_aeris_robot.surface_sensors.g[sensor_id] = i2cRead(1);
-    g_aeris_robot.surface_sensors.g[sensor_id]|= ((u16)i2cRead(1))<<8;
-
-    g_aeris_robot.surface_sensors.b[sensor_id] = i2cRead(1);
-    g_aeris_robot.surface_sensors.b[sensor_id]|= ((u16)i2cRead(0))<<8;
-
-    i2cStop();
+    g_aeris_robot.surface_sensors.w[sensor_id] = data.c;
+    g_aeris_robot.surface_sensors.r[sensor_id] = data.r;
+    g_aeris_robot.surface_sensors.g[sensor_id] = data.g;
+    g_aeris_robot.surface_sensors.b[sensor_id] = data.b;
 }
