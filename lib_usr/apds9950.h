@@ -3,8 +3,14 @@
 
 #include "device/device.h"
 
-/* APDS-9950  Digital Proximity, RGB and Ambient Light Sensor */
 
+///-----------------------------------------------------------------------------
+///
+/// APDS-9950  Digital Proximity, RGB and Ambient Light Sensor
+///
+/// I2C protocol definitions
+///
+///-----------------------------------------------------------------------------
 
 #define APDS9950_ADDRESS                (0x72)
 
@@ -40,25 +46,25 @@
 
 
 /* Command register bit definitions */
-#define APDS9950_COMMAND_ADD0           (0x00)
-#define APDS9950_COMMAND_ADD1           (0x05)
-#define APDS9950_COMMAND_ADD2           (0x06)
-#define APDS9950_COMMAND_ADD3           (0x07)
-#define APDS9950_COMMAND_TYPE0          (0x00)
-#define APDS9950_COMMAND_TYPE1          (0x20)
-#define APDS9950_COMMAND_TYPE2          (0x40)
-#define APDS9950_COMMAND_TYPE3          (0x60)
+#define APDS9950_COMMAND_ADD0           (0x00) /* Special function - No action */
+#define APDS9950_COMMAND_ADD1           (0x05) /* Special function - Proximity interrupt clear */
+#define APDS9950_COMMAND_ADD2           (0x06) /* Special function - Clear interrupt clear */
+#define APDS9950_COMMAND_ADD3           (0x07) /* Special function - Prox. & Clear interrupt clear */
+#define APDS9950_COMMAND_TYPE0          (0x00) /* Repeated byte protocol transaction */
+#define APDS9950_COMMAND_TYPE1          (0x20) /* Auto-Increment protocol transaction */
+#define APDS9950_COMMAND_TYPE2          (0x40) /* RESERVED - Do not use. */
+#define APDS9950_COMMAND_TYPE3          (0x60) /* Special function - see above */
 
 /* Enable register bit definitions */
-#define APDS9950_ENABLE_PON             (0x01)
-#define APDS9950_ENABLE_AEN             (0x02)
-#define APDS9950_ENABLE_PEN             (0x04)
-#define APDS9950_ENABLE_WEN             (0x08)
-#define APDS9950_ENABLE_AIEN            (0x10)
-#define APDS9950_ENABLE_PIEN            (0x20)
+#define APDS9950_ENABLE_PON             (0x01) /* Power ON */
+#define APDS9950_ENABLE_AEN             (0x02) /* RGBC enable */
+#define APDS9950_ENABLE_PEN             (0x04) /* Proximity enable */
+#define APDS9950_ENABLE_WEN             (0x08) /* Wait enable */
+#define APDS9950_ENABLE_AIEN            (0x10) /* Ambient light sensing interrupt enable */
+#define APDS9950_ENABLE_PIEN            (0x20) /* Proximity interrupt enable */
 
 /* Configuration register bit definitions */
-#define APDS9950_CONFIG_WLONG           (0x01)
+#define APDS9950_CONFIG_WLONG           (0x01) /* Wait long */
 
 /* Control register bit definitions */
 #define APDS9950_CONTROL_AGAIN0         (0x00) /* 1x RGBC Gain value */
@@ -82,6 +88,14 @@
 #define APDS9950_STATUS_PINT            (0x20)
 
 
+///-----------------------------------------------------------------------------
+///
+/// APDS-9950 API
+///
+/// Uses default I2C bus defined by SuzuhaOS.
+///
+///-----------------------------------------------------------------------------
+
 struct sRgbcData
 {
     u16 c;
@@ -91,8 +105,21 @@ struct sRgbcData
 };
 
 
-u32 apds9950_rgbc_init(void);
+#define APDS9950_ATIME_FASTEST          (0xff)
+#define APDS9950_ATIME_SLOWEST          (0x00)
+#define APDS9950_WTIME_FASTEST          (0xff)
+#define APDS9950_WTIME_SLOWEST          (0x00)
+#define APDS9950_RGBC_GAIN_1X           APDS9950_CONTROL_AGAIN0
+#define APDS9950_RGBC_GAIN_4X           APDS9950_CONTROL_AGAIN1
+#define APDS9950_RGBC_GAIN_16X          APDS9950_CONTROL_AGAIN2
+#define APDS9950_RGBC_GAIN_60X          APDS9950_CONTROL_AGAIN3
+
+u32 apds9950_rgbc_init(u8 atime, u8 wtime, u8 rgbc_gain);
 void apds9950_rgbc_read(struct sRgbcData *data);
+
+u8 apds9950_read_reg(u8 reg);
+void apds9950_write_reg(u8 reg, u8 val);
+
 
 
 #endif /* _APDS9950_H_ */

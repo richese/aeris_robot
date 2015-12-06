@@ -6,251 +6,181 @@
 #include "lib_usr/pca9548.h"
 
 
-u32
-aeris_init()
+struct sAerisRobot
 {
-    u32 i;
+    struct sAerisMotors motors;
+};
 
-    g_aeris_robot.state.state = 0;
-
-    g_aeris_robot.motors.left = 0;
-    g_aeris_robot.motors.right = 0;
-
-    g_aeris_robot.rgbw.r = 1;
-    g_aeris_robot.rgbw.g = 0;
-    g_aeris_robot.rgbw.b = 0;
-    g_aeris_robot.rgbw.w = 0;
-
-    g_aeris_robot.imu.roll = 0;
-    g_aeris_robot.imu.pitch = 0;
-    g_aeris_robot.imu.yaw = 0;
-
-    g_aeris_robot.imu.ax = 0;
-    g_aeris_robot.imu.ay = 0;
-    g_aeris_robot.imu.az = 0;
-
-    g_aeris_robot.imu.mx = 0;
-    g_aeris_robot.imu.my = 0;
-    g_aeris_robot.imu.mz = 0;
-
-    g_aeris_robot.imu.gx = 0;
-    g_aeris_robot.imu.gy = 0;
-    g_aeris_robot.imu.gz = 0;
-
-    g_aeris_robot.imu.temp = 0;
+static struct sAerisRobot g_aeris;
 
 
-    g_aeris_robot.obstacle_sensors.left = 0;
-    g_aeris_robot.obstacle_sensors.front = 0;
-    g_aeris_robot.obstacle_sensors.right = 0;
+u32
+aeris_init(void)
+{
+    u32 tmp;
+    GPIO_InitTypeDef pin_init;
+    TIM_TimeBaseInitTypeDef timer_init;
+
+    /* Initialize g_aeris structure */
+    g_aeris.motors.left = 0;
+    g_aeris.motors.right = 0;
 
 
-    for (i = 0; i < AERIS_SURFACE_SENSORS_COUNT; i++) {
-        g_aeris_robot.surface_sensors.r[i] = 0;
-        g_aeris_robot.surface_sensors.g[i] = 0;
-        g_aeris_robot.surface_sensors.b[i] = 0;
-        g_aeris_robot.surface_sensors.w[i] = 0;
-    }
-
-    g_aeris_robot.key.key = 0;
-
-
-    /* motors init */
+    /* Motor init */
 
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);
 
-    GPIO_InitTypeDef  GPIO_InitStructure;
+    // init M1 pin
+    pin_init.GPIO_Pin = AERIS_MOTORS_M1;
+    pin_init.GPIO_Mode = GPIO_Mode_OUT;
+    pin_init.GPIO_Speed = GPIO_Speed_100MHz;
+    pin_init.GPIO_OType = GPIO_OType_PP;
+    pin_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-    /* init M1 PIN */
-    GPIO_InitStructure.GPIO_Pin = AERIS_MOTORS_M1;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-
-    GPIO_Init(AERIS_MOTORS_M1_GPIO_BASE, &GPIO_InitStructure);
+    GPIO_Init(AERIS_MOTORS_M1_GPIO_BASE, &pin_init);
     GPIO_SetBits(AERIS_MOTORS_M1_GPIO_BASE, AERIS_MOTORS_M1);
 
-    /* init A phase pin */
-    GPIO_InitStructure.GPIO_Pin = AERIS_MOTORS_APHASE;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    // init A_PHASE pin
+    pin_init.GPIO_Pin = AERIS_MOTORS_APHASE;
+    pin_init.GPIO_Mode = GPIO_Mode_OUT;
+    pin_init.GPIO_Speed = GPIO_Speed_100MHz;
+    pin_init.GPIO_OType = GPIO_OType_PP;
+    pin_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-    GPIO_Init(AERIS_MOTORS_APHASE_GPIO_BASE, &GPIO_InitStructure);
+    GPIO_Init(AERIS_MOTORS_APHASE_GPIO_BASE, &pin_init);
     GPIO_ResetBits(AERIS_MOTORS_APHASE_GPIO_BASE, AERIS_MOTORS_APHASE);
 
-    /* init B phase pin */
-    GPIO_InitStructure.GPIO_Pin = AERIS_MOTORS_BPHASE;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    // init B_PHASE pin
+    pin_init.GPIO_Pin = AERIS_MOTORS_BPHASE;
+    pin_init.GPIO_Mode = GPIO_Mode_OUT;
+    pin_init.GPIO_Speed = GPIO_Speed_100MHz;
+    pin_init.GPIO_OType = GPIO_OType_PP;
+    pin_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-    GPIO_Init(AERIS_MOTORS_BPHASE_GPIO_BASE, &GPIO_InitStructure);
+    GPIO_Init(AERIS_MOTORS_BPHASE_GPIO_BASE, &pin_init);
     GPIO_ResetBits(AERIS_MOTORS_BPHASE_GPIO_BASE, AERIS_MOTORS_BPHASE);
 
+    // init A_PWM pin
+    pin_init.GPIO_Pin = AERIS_MOTORS_A_PWM;
+    pin_init.GPIO_Mode = GPIO_Mode_AF;
+    pin_init.GPIO_Speed = GPIO_Speed_50MHz;
+    pin_init.GPIO_OType = GPIO_OType_PP;
+    pin_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-    /* init PWS pins */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1;
+    GPIO_Init(AERIS_MOTORS_A_PWM_GPIO_BASE, &pin_init);
+    GPIO_PinAFConfig(AERIS_MOTORS_A_PWM_GPIO_BASE, GPIO_PinSource0, GPIO_AF_TIM5);
 
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    // init B_PWM pin
+    pin_init.GPIO_Pin = AERIS_MOTORS_B_PWM;
+    pin_init.GPIO_Mode = GPIO_Mode_AF;
+    pin_init.GPIO_Speed = GPIO_Speed_50MHz;
+    pin_init.GPIO_OType = GPIO_OType_PP;
+    pin_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_Init(AERIS_MOTORS_B_PWM_GPIO_BASE, &pin_init);
+    GPIO_PinAFConfig(AERIS_MOTORS_B_PWM_GPIO_BASE, GPIO_PinSource1, GPIO_AF_TIM5);
 
+    // init Timer 5
+    timer_init.TIM_Prescaler = 0;
+    timer_init.TIM_CounterMode = TIM_CounterMode_Up;
+    timer_init.TIM_Period = AERIS_MOTORS_PWM_PERIOD;
+    timer_init.TIM_ClockDivision = 0;
+    timer_init.TIM_RepetitionCounter = 0;
+    TIM_TimeBaseInit(TIM5, &timer_init);
 
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_TIM5);
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_TIM5);
+    aeris_motors_seti(0, 0);
 
-
-    TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-
-
-    /* Time Base configuration */
-    TIM_TimeBaseStructure.TIM_Prescaler = 0;
-    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseStructure.TIM_Period = AERIS_MOTORS_PWM_PERIOD;
-    TIM_TimeBaseStructure.TIM_ClockDivision = 0;
-    TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
-
-    TIM_TimeBaseInit(TIM5, &TIM_TimeBaseStructure);
-
-
-    aeris_set_motors();
     TIM_Cmd(TIM5, ENABLE);
     TIM_CtrlPWMOutputs(TIM5, ENABLE);
 
-    aeris_set_motors();
 
+    /* Led init */
 
+    // RGB led pins
+    pin_init.GPIO_Pin = AERIS_RGB_LED_MASK;
+    pin_init.GPIO_Mode = GPIO_Mode_OUT;
+    pin_init.GPIO_Speed = GPIO_Speed_100MHz;
+    pin_init.GPIO_OType = GPIO_OType_PP;
+    pin_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-    /* leds + key init */
+    GPIO_Init(AERIS_RGB_GPIO_BASE, &pin_init);
 
+    // White led pin
+    pin_init.GPIO_Pin = AERIS_WHITE_LED;
+    pin_init.GPIO_Mode = GPIO_Mode_OUT;
+    pin_init.GPIO_OType = GPIO_OType_PP;
+    pin_init.GPIO_Speed = GPIO_Speed_100MHz;
+    pin_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-    GPIO_InitStructure.GPIO_Pin = AERIS_RGB_LED_1 | AERIS_RGB_LED_2 | AERIS_RGB_LED_3;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_Init(AERIS_WHITE_LED_GPIO_BASE, &pin_init);
 
-    GPIO_Init(AERIS_RGB_GPIO_BASE, &GPIO_InitStructure);
+    aeris_rgbw_reset(AERIS_LED_ALL);
 
+    /* Button init */
 
-    GPIO_InitStructure.GPIO_Pin = AERIS_RGB_LED_W;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    // Button pin
+    pin_init.GPIO_Pin = AERIS_KEY_1;
+    pin_init.GPIO_Mode = GPIO_Mode_IN;
+    pin_init.GPIO_Speed = GPIO_Speed_50MHz;
+    pin_init.GPIO_OType = GPIO_OType_PP;
+    pin_init.GPIO_PuPd = GPIO_PuPd_UP;
 
-    GPIO_Init(AERIS_RGB_LED_W_BASE, &GPIO_InitStructure);
+    GPIO_Init(AERIS_KEY_GPIO_BASE, &pin_init);
 
-    GPIO_InitStructure.GPIO_Pin = AERIS_KEY_1;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_Init(AERIS_KEY_GPIO_BASE, &GPIO_InitStructure);
+    /* I2C peripherals init */
 
-    aeris_set_rgbw();
+    // IMU init
+    tmp = lsm9ds0_init();
+    if (tmp != 0)
+        aeris_error(tmp);
 
-    /* init imu */
-    u32 res;
-    res = lsm9ds0_init();
-    if (res != 0)
-        aeris_error(res);
-
-    /*init surface sensors*/
-
-    /*white leds*/
-    g_aeris_robot.rgbw.w = 1;
-    aeris_set_rgbw();
-
-    /* init i2c switch */
+    // I2C switch init
     pca9548_init();
 
-    if (aeris_init_surface_sensor(AERIS_RGB_SS_FRONT_LEFT) != 0)
-        aeris_error(10);
+    // RGB sensors init
+    for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
+        // 2x init to get out of possible bus fault condition after stm32f4 reset
+        aeris_surface_sensor_init(i);
+        if (aeris_surface_sensor_init(i) != 0) {
+            aeris_error(i);
+        }
+    }
 
-    if (aeris_init_surface_sensor(AERIS_RGB_SS_FRONT_LEFT_CENTER) != 0)
-        aeris_error(10);
-
-    if (aeris_init_surface_sensor(AERIS_RGB_SS_FRONT_RIGHT_CENTER) != 0)
-        aeris_error(10);
-
-    if (aeris_init_surface_sensor(AERIS_RGB_SS_FRONT_RIGHT) != 0)
-        aeris_error(10);
-
-    if (aeris_init_surface_sensor(AERIS_RGB_SS_REAR_LEFT) != 0)
-        aeris_error(10);
-
-    aeris_init_surface_sensor(AERIS_RGB_SS_REAR_LEFT_CENTER);
-    aeris_init_surface_sensor(AERIS_RGB_SS_REAR_RIGHT_CENTER);
-
-    if (aeris_init_surface_sensor(AERIS_RGB_SS_REAR_RIGHT) != 0)
-        aeris_error(10);
-
-
-    /*white leds*/
-    g_aeris_robot.rgbw.w = 0;
-    aeris_set_rgbw();
-
-
-    /* init done, turn on green led */
-    g_aeris_robot.rgbw.r = 0;
-    g_aeris_robot.rgbw.g = 1;
-    g_aeris_robot.rgbw.b = 0;
-    aeris_set_rgbw();
+    // TODO: sensor board magnetometers
 
     return 0;
 }
 
 void
-aeris_sleep()
-{
-    // TODO
-}
-
-void
-aeris_wake_up()
-{
-    // TODO
-}
-
-void
-aeris_set_motors()
+aeris_motors_set(struct sAerisMotors speed)
 {
     i32 ch1 = 0;
     i32 ch2 = 0;
 
-    if (g_aeris_robot.motors.left < -AERIS_MOTORS_MAX_SPEED)
-        g_aeris_robot.motors.left = -AERIS_MOTORS_MAX_SPEED;
+    if (speed.left < -AERIS_MOTORS_MAX_SPEED)
+        speed.left = -AERIS_MOTORS_MAX_SPEED;
 
-    if (g_aeris_robot.motors.right < -AERIS_MOTORS_MAX_SPEED)
-        g_aeris_robot.motors.right = -AERIS_MOTORS_MAX_SPEED;
+    if (speed.left > AERIS_MOTORS_MAX_SPEED)
+        speed.left =  AERIS_MOTORS_MAX_SPEED;
 
-    if (g_aeris_robot.motors.left > AERIS_MOTORS_MAX_SPEED)
-        g_aeris_robot.motors.left =  AERIS_MOTORS_MAX_SPEED;
+    if (speed.right < -AERIS_MOTORS_MAX_SPEED)
+        speed.right = -AERIS_MOTORS_MAX_SPEED;
 
-    if (g_aeris_robot.motors.right > AERIS_MOTORS_MAX_SPEED)
-        g_aeris_robot.motors.right = AERIS_MOTORS_MAX_SPEED;
+    if (speed.right > AERIS_MOTORS_MAX_SPEED)
+        speed.right = AERIS_MOTORS_MAX_SPEED;
 
-    ch1 = g_aeris_robot.motors.right;
-    ch2 = g_aeris_robot.motors.left;
+    ch2 = speed.left;
+    ch1 = speed.right;
 
+    if (ch1 < 0) ch1 = -ch1;
+    if (ch2 < 0) ch2 = -ch2;
 
-    if (ch1 < 0)
-        ch1 = -ch1;
-
-    if (ch2 < 0)
-        ch2 = -ch2;
-
-    if (g_aeris_robot.motors.left < 0)
+    if (speed.left < 0)
         GPIO_SetBits(AERIS_MOTORS_APHASE_GPIO_BASE, AERIS_MOTORS_APHASE);
     else
         GPIO_ResetBits(AERIS_MOTORS_APHASE_GPIO_BASE, AERIS_MOTORS_APHASE);
 
-    if (g_aeris_robot.motors.right < 0)
+    if (speed.right < 0)
         GPIO_SetBits(AERIS_MOTORS_BPHASE_GPIO_BASE, AERIS_MOTORS_BPHASE);
     else
         GPIO_ResetBits(AERIS_MOTORS_BPHASE_GPIO_BASE, AERIS_MOTORS_BPHASE);
@@ -275,117 +205,141 @@ aeris_set_motors()
 
     TIM_OCInitStructure.TIM_Pulse = (ch2*(AERIS_MOTORS_PWM_PERIOD-1))/100;
     TIM_OC2Init(TIM5, &TIM_OCInitStructure);
+
+    g_aeris.motors.left = speed.left;
+    g_aeris.motors.right = speed.right;
 }
 
 void
-aeris_set_rgbw()
+aeris_motors_seti(i32 left, i32 right)
 {
-    if (g_aeris_robot.rgbw.r != 0)
-        GPIO_ResetBits(AERIS_RGB_GPIO_BASE, AERIS_RGB_LED_R);
-    else
-        GPIO_SetBits(AERIS_RGB_GPIO_BASE, AERIS_RGB_LED_R);
-
-    if (g_aeris_robot.rgbw.g != 0)
-        GPIO_ResetBits(AERIS_RGB_GPIO_BASE, AERIS_RGB_LED_G);
-    else
-        GPIO_SetBits(AERIS_RGB_GPIO_BASE, AERIS_RGB_LED_G);
-
-    if (g_aeris_robot.rgbw.b != 0)
-        GPIO_ResetBits(AERIS_RGB_GPIO_BASE, AERIS_RGB_LED_B);
-    else
-        GPIO_SetBits(AERIS_RGB_GPIO_BASE, AERIS_RGB_LED_B);
-
-    if (g_aeris_robot.rgbw.w != 0)
-        GPIO_SetBits(AERIS_RGB_LED_W_BASE, AERIS_RGB_LED_W);
-    else
-        GPIO_ResetBits(AERIS_RGB_LED_W_BASE, AERIS_RGB_LED_W);
+    struct sAerisMotors speed;
+    speed.left = left;
+    speed.right = right;
+    aeris_motors_set(speed);
 }
 
+struct sAerisMotors
+aeris_motors_state(void)
+{
+    return g_aeris.motors;
+}
 
 void
-aeris_read_imu()
+aeris_rgbw_set(u16 leds)
+{
+    u16 mask;
+
+    mask = leds & AERIS_RGB_LED_MASK;
+    if (mask != 0) {
+        GPIO_ResetBits(AERIS_RGB_GPIO_BASE, mask);
+    }
+
+    mask = (leds<<4) & AERIS_WHITE_LED;
+    if (mask != 0) {
+        GPIO_SetBits(AERIS_WHITE_LED_GPIO_BASE,AERIS_WHITE_LED);
+    }
+}
+
+void
+aeris_rgbw_reset(u16 leds)
+{
+    u16 mask;
+
+    mask = leds & AERIS_RGB_LED_MASK;
+    if (mask != 0) {
+        GPIO_SetBits(AERIS_RGB_GPIO_BASE, mask);
+    }
+
+    mask = (leds<<4) & AERIS_WHITE_LED;
+    if (mask != 0) {
+        GPIO_ResetBits(AERIS_WHITE_LED_GPIO_BASE,AERIS_WHITE_LED);
+    }
+}
+
+void
+aeris_rgbw_toggle(u16 leds)
+{
+    u16 mask;
+
+    mask = leds & AERIS_RGB_LED_MASK;
+    if (mask != 0) {
+        GPIO_ToggleBits(AERIS_RGB_GPIO_BASE, mask);
+    }
+
+    mask = (leds<<4) & AERIS_WHITE_LED;
+    if (mask != 0) {
+        GPIO_ToggleBits(AERIS_WHITE_LED_GPIO_BASE,AERIS_WHITE_LED);
+    }
+}
+
+u16
+aeris_rgbw_state(void)
+{
+    u16 res = 0;
+    res |= GPIO_ReadOutputData(AERIS_RGB_GPIO_BASE) & AERIS_RGB_LED_MASK;
+    res |= ((GPIO_ReadOutputData(AERIS_WHITE_LED_GPIO_BASE) & AERIS_WHITE_LED)>>4);
+    return res;
+}
+
+u8
+aeris_key_state(void)
+{
+    if (GPIO_ReadInputDataBit(AERIS_KEY_GPIO_BASE, AERIS_KEY_1) == 0) {
+        return AERIS_KEY_PRESSED;
+    } else {
+        return 0x00;
+    }
+}
+
+void
+aeris_imu_read(struct sAerisIMU *data)
 {
     lsm9ds0_read();
 
-    g_aeris_robot.imu.ax = g_lsm9ds0_imu.ax;
-    g_aeris_robot.imu.ay = g_lsm9ds0_imu.ay;
-    g_aeris_robot.imu.az = g_lsm9ds0_imu.az;
+    data->ax = g_lsm9ds0_imu.ax;
+    data->ay = g_lsm9ds0_imu.ay;
+    data->az = g_lsm9ds0_imu.az;
 
-    g_aeris_robot.imu.mx = g_lsm9ds0_imu.mx;
-    g_aeris_robot.imu.my = g_lsm9ds0_imu.my;
-    g_aeris_robot.imu.mz = g_lsm9ds0_imu.mz;
+    data->mx = g_lsm9ds0_imu.mx;
+    data->my = g_lsm9ds0_imu.my;
+    data->mz = g_lsm9ds0_imu.mz;
 
-    g_aeris_robot.imu.gx = g_lsm9ds0_imu.gx;
-    g_aeris_robot.imu.gy = g_lsm9ds0_imu.gy;
-    g_aeris_robot.imu.gz = g_lsm9ds0_imu.gz;
+    data->gx = g_lsm9ds0_imu.gx;
+    data->gy = g_lsm9ds0_imu.gy;
+    data->gz = g_lsm9ds0_imu.gz;
 
-    g_aeris_robot.imu.temp = g_lsm9ds0_imu.temp;
+    data->temp = g_lsm9ds0_imu.temp;
 
-    g_aeris_robot.imu.roll = 0;
-    g_aeris_robot.imu.pitch = 0;
-    g_aeris_robot.imu.yaw = 0;
-}
-
-
-void
-aeris_read_obstacle_sensors()
-{
-    //TODO
-}
-
-void
-aeris_read_surface_sensors()
-{
-    aeris_read_surface_sensor(AERIS_RGB_SS_FRONT_LEFT);
-    aeris_read_surface_sensor(AERIS_RGB_SS_FRONT_LEFT_CENTER);
-    aeris_read_surface_sensor(AERIS_RGB_SS_FRONT_RIGHT_CENTER);
-    aeris_read_surface_sensor(AERIS_RGB_SS_FRONT_RIGHT);
-
-    aeris_read_surface_sensor(AERIS_RGB_SS_REAR_LEFT);
-    aeris_read_surface_sensor(AERIS_RGB_SS_REAR_LEFT_CENTER);
-    aeris_read_surface_sensor(AERIS_RGB_SS_REAR_RIGHT_CENTER);
-    aeris_read_surface_sensor(AERIS_RGB_SS_REAR_RIGHT);
+    data->roll = 0;
+    data->pitch = 0;
+    data->yaw = 0;
 }
 
 u32
-aeris_read_key()
+aeris_surface_sensor_init(u32 id)
 {
-    if ( GPIO_ReadInputDataBit(AERIS_KEY_GPIO_BASE, AERIS_KEY_1) == 0)
-        return AERIS_KEY_1;
-    else
-        return 0;
-}
+    u32 res = 0;
 
-u32
-aeris_init_surface_sensor(u32 sensor_id)
-{
-    u32 tmp;
+    if ((1<<id) & AERIS_SS_ENABLE) {
+        pca9548_set_bus(id);
+        res = apds9950_rgbc_init(APDS9950_ATIME_FASTEST,
+                                 APDS9950_WTIME_FASTEST,
+                                 APDS9950_RGBC_GAIN_60X);
+    }
 
-    pca9548_set_bus(sensor_id);
-
-    tmp = apds9950_rgbc_init();
-    if (tmp != 0) return 1;
-
-    aeris_read_surface_sensor(sensor_id);
-
-    //some error
-    if (g_aeris_robot.surface_sensors.w[sensor_id] == 0xffff)
-        return 1;
-
-    return 0;
+    return res;
 }
 
 void
-aeris_read_surface_sensor(u32 sensor_id)
+aeris_surface_sensor_read_raw(u32 id, struct sRgbcData *raw)
 {
-    struct sRgbcData data;
-
-    pca9548_set_bus(sensor_id);
-
-    apds9950_rgbc_read(&data);
-
-    g_aeris_robot.surface_sensors.w[sensor_id] = data.c;
-    g_aeris_robot.surface_sensors.r[sensor_id] = data.r;
-    g_aeris_robot.surface_sensors.g[sensor_id] = data.g;
-    g_aeris_robot.surface_sensors.b[sensor_id] = data.b;
+    if ((1<<id) & AERIS_SS_ENABLE) {
+        apds9950_rgbc_read(raw);
+    } else {
+        raw->c = 0;
+        raw->r = 0;
+        raw->g = 0;
+        raw->b = 0;
+    }
 }

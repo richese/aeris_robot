@@ -2,6 +2,7 @@
 
 #include "os/suzuha_os.h"
 #include "lib_usr/aeris_robot/aeris_robot.h"
+#include "lib_usr/math.h"
 
 
 thread_stack_t test_thread_stack[USER_THREAD_STACK_SIZE];
@@ -13,7 +14,6 @@ void
 main_thread()
 {
     printf_(OS_WELCOME_MESSAGE);
-
     aeris_init();
 
     u32 current_test = DEFAULT_TEST;
@@ -48,7 +48,9 @@ main_thread()
         }
 
         timer_delay_ms(250);
-        while (aeris_read_key() == 0) yield();
+        while (aeris_key_state() != AERIS_KEY_PRESSED && g_stop_test == 0) {
+            yield();
+        }
         g_stop_test = 1;
         join(thread_id);
         current_test = (current_test + 1) % TEST_COUNT;
@@ -60,59 +62,65 @@ main_thread()
 void
 ss_test_thread()
 {
+    struct sRgbcData raw[AERIS_SS_COUNT];
+
     printf_("Starting surface sensors test.\n");
     timer_delay_ms(1000);
 
-    g_aeris_robot.rgbw.w = 1;
-    aeris_set_rgbw();
+    aeris_rgbw_set(AERIS_LED_W);
+
+    event_timer_set_period(SS_PRINT_TIMER_ID, (SS_PRINT_TIMER_PERIOD>>2));
 
     while(!g_stop_test) {
-        g_aeris_robot.rgbw.g = 1;
-        aeris_set_rgbw();
+        event_timer_wait(SS_PRINT_TIMER_ID);
 
-        aeris_read_surface_sensors();
+        aeris_rgbw_set(AERIS_LED_G);
+        for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
+            aeris_surface_sensor_read_raw(i, &raw[i]);
+        }
 
-        g_aeris_robot.rgbw.g = 0;
-        aeris_set_rgbw();
+        printf_("\n\ntime = %u\n", (u32)timer_get_time());
+        for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
+            printf_("[%u %u %u %u]\n", raw[i].c, raw[i].r, raw[i].g, raw[i].b);
+        }
 
-        aeris_print_ss_data();
-        printf_("\n");
-
-        timer_delay_ms(50);
+        aeris_rgbw_reset(AERIS_LED_G);
     }
 
-    g_aeris_robot.rgbw.w = 0;
-    aeris_set_rgbw();
+    aeris_rgbw_reset(AERIS_LED_G | AERIS_LED_W);
 }
 
 void
 imu_test_thread()
 {
+    struct sAerisIMU imu;
+
     printf_("Starting imu test.\n");
     timer_delay_ms(1000);
 
     while(!g_stop_test) {
-        g_aeris_robot.rgbw.g = 1;
-        aeris_set_rgbw();
 
-        aeris_read_imu();
+        aeris_rgbw_set(AERIS_LED_G);
+        aeris_imu_read(&imu);
+        aeris_rgbw_reset(AERIS_LED_G);
 
-        g_aeris_robot.rgbw.g = 0;
-        aeris_set_rgbw();
-
-        aeris_print_imu_data();
+        printf_("a = [%i, %i, %i]\n", imu.ax, imu.ay, imu.az);
+        printf_("m = [%i, %i, %i]\n", imu.mx, imu.my, imu.mz);
+        printf_("g = [%i, %i, %i]\n", imu.gx, imu.gy, imu.gz);
+        printf_("gh = %i mh = %i\n", (i32)(m_atan2(imu.ax, imu.az)*180.0/PI_),
+                (i32)(m_atan2(imu.my, imu.mx)*180.0/PI_));
         printf_("\n\n");
 
         timer_delay_ms(100);
     }
+
+    aeris_rgbw_reset(AERIS_LED_G);
 }
 
 void
 ss_error_test_thread()
 {
-    printf_("Starting surface sensors error rate test.\n");
-
-    struct sAerisSurfaceSensors *sensor = &g_aeris_robot.surface_sensors;
+    struct sRgbcData raw;
     u32 total_tests = 0;
     u32 reset_cnt[AERIS_SS_COUNT];
     u32 error_cnt[AERIS_SS_COUNT][4]; // 128 bytes
@@ -122,38 +130,40 @@ ss_error_test_thread()
         for (u32 j = 0; j < 4; j++) error_cnt[i][j] = 0;
     }
 
+    printf_("Starting surface sensors error rate test.\n");
     timer_delay_ms(1000);
 
-    g_aeris_robot.rgbw.w = 1;
-    aeris_set_rgbw();
+    aeris_rgbw_set(AERIS_LED_W);
 
-    event_timer_set_period(SS_ERROR_TIMER_ID, SS_ERROR_TIMER_PERIOD);
+    event_timer_set_period(SS_SAMPLING_TIMER_ID, SS_SAMPLING_TIMER_PERIOD);
+    event_timer_set_period(SS_PRINT_TIMER_ID, SS_PRINT_TIMER_PERIOD);
 
     while(!g_stop_test) {
+        event_timer_wait(SS_SAMPLING_TIMER_ID);
         total_tests++;
 
         for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
-            aeris_read_surface_sensor(i);
-            if (ss_has_high_error(sensor->r[i]) ||
-                ss_has_high_error(sensor->g[i]) ||
-                ss_has_high_error(sensor->b[i]) ||
-                ss_has_high_error(sensor->w[i])) {
+            aeris_surface_sensor_read_raw(i, &raw);
+            if (ss_has_high_error(raw.c) ||
+                ss_has_high_error(raw.r) ||
+                ss_has_high_error(raw.g) ||
+                ss_has_high_error(raw.b)) {
 
-                aeris_init_surface_sensor(i);
-                aeris_read_surface_sensor(i);
+                //aeris_surface_sensor_init(i);
+                //aeris_surface_sensor_read_raw(i, &raw);
                 reset_cnt[i] += 1;
             }
 
-            error_cnt[i][0] += ss_has_high_error(sensor->r[i]);
-            error_cnt[i][1] += ss_has_high_error(sensor->g[i]);
-            error_cnt[i][2] += ss_has_high_error(sensor->b[i]);
-            error_cnt[i][3] += ss_has_high_error(sensor->w[i]);
+            error_cnt[i][0] += ss_has_high_error(raw.c);
+            error_cnt[i][1] += ss_has_high_error(raw.r);
+            error_cnt[i][2] += ss_has_high_error(raw.g);
+            error_cnt[i][3] += ss_has_high_error(raw.b);
         }
 
-        if (event_timer_get_flag(SS_ERROR_TIMER_ID)) {
-            event_timer_clear_flag(SS_ERROR_TIMER_ID);
+        if (event_timer_get_flag(SS_PRINT_TIMER_ID)) {
+            event_timer_clear_flag(SS_PRINT_TIMER_ID);
 
-            printf_("test_count=%u\n", total_tests);
+            printf_("time=%u test_count=%u\n", timer_get_time(), total_tests);
             for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
                 printf_("[%u] [%u %u %u %u]\n", reset_cnt[i],
                         error_cnt[i][0], error_cnt[i][1],
@@ -161,38 +171,36 @@ ss_error_test_thread()
             }
             printf_("\n\n");
         }
-        timer_delay_ms(1);
+        timer_delay_ms(4);
     }
 
-    g_aeris_robot.rgbw.w = 0;
-    aeris_set_rgbw();
+    aeris_rgbw_reset(AERIS_LED_W);
 }
 
 void
 motor_test_thread()
 {
+    struct sAerisMotors speed[4] = {
+        {40, 40},
+        {0, 0},
+        {-40, -40},
+        {0, 0}
+    };
+    u32 i = 0;
+    u32 speed_count = 4;
+
+    aeris_rgbw_reset(AERIS_LED_B);
     printf_("Starting motor test.\n");
     timer_delay_ms(1000);
 
     while (!g_stop_test) {
-        g_aeris_robot.rgbw.b = 1;
-        aeris_set_rgbw();
-
-        g_aeris_robot.motors.left = 40;
-        g_aeris_robot.motors.right = 40;
-        aeris_set_motors();
-        printf_("speed = [%i, %i]\n", g_aeris_robot.motors.left,
-                g_aeris_robot.motors.right);
-        timer_delay_ms(800);
-
-        g_aeris_robot.rgbw.b = 0;
-        aeris_set_rgbw();
-
-        g_aeris_robot.motors.left = 0;
-        g_aeris_robot.motors.right = 0;
-        printf_("speed = [%i, %i]\n", g_aeris_robot.motors.left,
-                g_aeris_robot.motors.right);
-        aeris_set_motors();
+        aeris_motors_set(speed[i]);
+        aeris_rgbw_toggle(AERIS_LED_B);
+        printf_("speed = [%i, %i]\n", speed[i].left, speed[i].right);
+        i = (i + 1) % speed_count;
         timer_delay_ms(800);
     }
+
+    aeris_rgbw_reset(AERIS_LED_B);
+    aeris_motors_seti(0, 0);
 }
