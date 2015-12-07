@@ -133,21 +133,28 @@ void aeris_imu_read(struct sAerisIMU *data);
 
 #define AERIS_SS_COUNT                  ((u32)8)
 
-#define AERIS_SS_FRONT_LEFT             ((u32)0)
-#define AERIS_SS_FRONT_LEFT_CENTER      ((u32)1)
-#define AERIS_SS_FRONT_RIGHT_CENTER     ((u32)2)
-#define AERIS_SS_FRONT_RIGHT            ((u32)3)
+#define AERIS_SS_FRONT_RIGHT            ((u32)0)
+#define AERIS_SS_FRONT_RIGHT_CENTER     ((u32)1)
+#define AERIS_SS_FRONT_LEFT_CENTER      ((u32)2)
+#define AERIS_SS_FRONT_LEFT             ((u32)3)
 #define AERIS_SS_REAR_LEFT              ((u32)4)
-#define AERIS_SS_REAR_LEFT_CENTER       ((u32)5)
-#define AERIS_SS_REAR_RIGHT_CENTER      ((u32)6)
+#define AERIS_SS_REAR_LEFT_CENTER       ((u32)5) // not confirmed
+#define AERIS_SS_REAR_RIGHT_CENTER      ((u32)6) // not confirmed
 #define AERIS_SS_REAR_RIGHT             ((u32)7)
+
+#define AERIS_SS_CHANNEL_C              APDS9950_CDATAL
+#define AERIS_SS_CHANNEL_R              APDS9950_RDATAL
+#define AERIS_SS_CHANNEL_G              APDS9950_GDATAL
+#define AERIS_SS_CHANNEL_B              APDS9950_BDATAL
 
 // defines which sensors are actually soldered on PCB
 // disabled sensors always read zeros
 #define AERIS_SS_ENABLE                 ((u32)0x0000009f)
 
 u32 aeris_surface_sensor_init(u32 id);
+u32 aeris_surface_sensor_is_enabled(u32 id);
 void aeris_surface_sensor_read_raw(u32 id, struct sRgbcData *raw);
+u16 aeris_surface_sensor_read_channel(u32 id, u8 channel);
 
 
 #endif /* _AERIS_ROBOT_H_ */

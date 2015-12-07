@@ -22,6 +22,12 @@
       "sh": true,
       "cwd": "{PROJECT_PATH}",
       "keymap": "f7"
+    },
+    "Flash: Line follower": {
+      "cmd": "./stm32f_write_dfu_usb.sh build/line_follower.bin",
+      "sh": true,
+      "cwd": "{PROJECT_PATH}",
+      "keymap": "f8"
     }
   }
 }

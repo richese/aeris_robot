@@ -6,7 +6,7 @@ apds9950_rgbc_init(u8 atime, u8 wtime, u8 rgbc_gain)
 {
     u8 val;
 
-    apds9950_read_reg(APDS9950_ID);
+    //apds9950_read_reg(APDS9950_ID);
 
     val = apds9950_read_reg(APDS9950_ID);
     if (val != APDS9950_ID_VALUE) return 1;
@@ -79,6 +79,24 @@ apds9950_read_reg(u8 reg)
     i2cStop();
 
     return val;
+}
+
+u16
+apds9950_read_reg16(u8 start_reg)
+{
+    u16 res;
+
+    i2cStart();
+    i2cWrite(APDS9950_ADDRESS);
+    i2cWrite(APDS9950_COMMAND | APDS9950_COMMAND_TYPE1 | start_reg);
+
+    i2cStart();
+    i2cWrite(APDS9950_ADDRESS | 1);
+
+    res = i2cRead(1);
+    res |= (((u16)i2cRead(0)) << 8);
+
+    return res;
 }
 
 void

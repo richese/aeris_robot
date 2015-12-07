@@ -118,6 +118,7 @@ u32 apds9950_rgbc_init(u8 atime, u8 wtime, u8 rgbc_gain);
 void apds9950_rgbc_read(struct sRgbcData *data);
 
 u8 apds9950_read_reg(u8 reg);
+u16 apds9950_read_reg16(u8 start_reg);
 void apds9950_write_reg(u8 reg, u8 val);
 
 

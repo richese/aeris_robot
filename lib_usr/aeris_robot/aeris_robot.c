@@ -140,10 +140,13 @@ aeris_init(void)
     // RGB sensors init
     for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
         // 2x init to get out of possible bus fault condition after stm32f4 reset
-        aeris_surface_sensor_init(i);
         if (aeris_surface_sensor_init(i) != 0) {
-            aeris_error(i);
+            printf_("Error at surf. sensor %u init. Retrying...\n", i);
+            if (aeris_surface_sensor_init(i) != 0) {
+                aeris_error(i);
+            }
         }
+
     }
 
     // TODO: sensor board magnetometers
@@ -331,6 +334,12 @@ aeris_surface_sensor_init(u32 id)
     return res;
 }
 
+u32
+aeris_surface_sensor_is_enabled(u32 id)
+{
+    return (1<<id) & AERIS_SS_ENABLE;
+}
+
 void
 aeris_surface_sensor_read_raw(u32 id, struct sRgbcData *raw)
 {
@@ -343,4 +352,17 @@ aeris_surface_sensor_read_raw(u32 id, struct sRgbcData *raw)
         raw->g = 0;
         raw->b = 0;
     }
+}
+
+u16
+aeris_surface_sensor_read_channel(u32 id, u8 channel)
+{
+    u16 res = 0;
+
+    if ((1<<id) & AERIS_SS_ENABLE) {
+        pca9548_set_bus(id);
+        res = apds9950_read_reg16(channel);
+    }
+
+    return res;
 }
