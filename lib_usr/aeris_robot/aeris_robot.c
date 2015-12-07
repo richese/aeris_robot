@@ -341,16 +341,16 @@ aeris_surface_sensor_is_enabled(u32 id)
 }
 
 void
-aeris_surface_sensor_read_raw(u32 id, struct sRgbcData *raw)
+aeris_surface_sensor_read_raw(u32 id, u16 raw[4])
 {
     if ((1<<id) & AERIS_SS_ENABLE) {
         pca9548_set_bus(id);
         apds9950_rgbc_read(raw);
     } else {
-        raw->c = 0;
-        raw->r = 0;
-        raw->g = 0;
-        raw->b = 0;
+        raw[0] = 0;
+        raw[1] = 0;
+        raw[2] = 0;
+        raw[3] = 0;
     }
 }
 

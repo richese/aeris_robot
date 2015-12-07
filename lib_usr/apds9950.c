@@ -35,7 +35,7 @@ apds9950_rgbc_init(u8 atime, u8 wtime, u8 rgbc_gain)
 }
 
 void
-apds9950_rgbc_read(struct sRgbcData *data)
+apds9950_rgbc_read(u16 data[4])
 {
     u16 tmp;
 
@@ -48,19 +48,19 @@ apds9950_rgbc_read(struct sRgbcData *data)
 
     tmp = i2cRead(1);
     tmp |= (((u16)i2cRead(1)) << 8);
-    data->c = tmp;
+    data[0] = tmp;
 
     tmp = i2cRead(1);
     tmp |= (((u16)i2cRead(1)) << 8);
-    data->r = tmp;
+    data[1] = tmp;
 
     tmp = i2cRead(1);
     tmp |= (((u16)i2cRead(1)) << 8);
-    data->g = tmp;
+    data[2] = tmp;
 
     tmp = i2cRead(1);
     tmp |= (((u16)i2cRead(0)) << 8);
-    data->b = tmp;
+    data[3] = tmp;
 
     i2cStop();
 }

@@ -62,7 +62,7 @@ main_thread()
 void
 ss_test_thread()
 {
-    struct sRgbcData raw[AERIS_SS_COUNT];
+    u16 raw[AERIS_SS_COUNT][4];
 
     printf_("Starting surface sensors test.\n");
     timer_delay_ms(1000);
@@ -76,12 +76,12 @@ ss_test_thread()
 
         aeris_rgbw_set(AERIS_LED_G);
         for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
-            aeris_surface_sensor_read_raw(i, &raw[i]);
+            aeris_surface_sensor_read_raw(i, raw[i]);
         }
 
         printf_("\n\ntime = %u\n", (u32)timer_get_time());
         for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
-            printf_("[%u %u %u %u]\n", raw[i].c, raw[i].r, raw[i].g, raw[i].b);
+            printf_("[%u %u %u %u]\n", raw[i][0], raw[i][1], raw[i][2], raw[i][3]);
         }
 
         aeris_rgbw_reset(AERIS_LED_G);
@@ -120,7 +120,7 @@ imu_test_thread()
 void
 ss_error_test_thread()
 {
-    struct sRgbcData raw;
+    u16 raw[4];
     u32 total_tests = 0;
     u32 last_tests = 0;
     u32 reset_cnt[AERIS_SS_COUNT];
@@ -144,21 +144,21 @@ ss_error_test_thread()
         total_tests++;
 
         for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
-            aeris_surface_sensor_read_raw(i, &raw);
-            if (ss_has_high_error(raw.c) ||
-                ss_has_high_error(raw.r) ||
-                ss_has_high_error(raw.g) ||
-                ss_has_high_error(raw.b)) {
+            aeris_surface_sensor_read_raw(i, raw);
+            if (ss_has_high_error(raw[0]) ||
+                ss_has_high_error(raw[1]) ||
+                ss_has_high_error(raw[2]) ||
+                ss_has_high_error(raw[3])) {
 
                 aeris_surface_sensor_init(i);
-                aeris_surface_sensor_read_raw(i, &raw);
+                aeris_surface_sensor_read_raw(i, raw);
                 reset_cnt[i] += 1;
             }
 
-            error_cnt[i][0] += ss_has_high_error(raw.c);
-            error_cnt[i][1] += ss_has_high_error(raw.r);
-            error_cnt[i][2] += ss_has_high_error(raw.g);
-            error_cnt[i][3] += ss_has_high_error(raw.b);
+            error_cnt[i][0] += ss_has_high_error(raw[0]);
+            error_cnt[i][1] += ss_has_high_error(raw[1]);
+            error_cnt[i][2] += ss_has_high_error(raw[2]);
+            error_cnt[i][3] += ss_has_high_error(raw[3]);
         }
 
         if (event_timer_get_flag(SS_PRINT_TIMER_ID)) {

@@ -153,7 +153,7 @@ void aeris_imu_read(struct sAerisIMU *data);
 
 u32 aeris_surface_sensor_init(u32 id);
 u32 aeris_surface_sensor_is_enabled(u32 id);
-void aeris_surface_sensor_read_raw(u32 id, struct sRgbcData *raw);
+void aeris_surface_sensor_read_raw(u32 id, u16 raw[4]);
 u16 aeris_surface_sensor_read_channel(u32 id, u8 channel);
 
 

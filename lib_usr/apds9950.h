@@ -96,15 +96,6 @@
 ///
 ///-----------------------------------------------------------------------------
 
-struct sRgbcData
-{
-    u16 c;
-    u16 r;
-    u16 g;
-    u16 b;
-};
-
-
 #define APDS9950_ATIME_FASTEST          (0xff)
 #define APDS9950_ATIME_SLOWEST          (0x00)
 #define APDS9950_WTIME_FASTEST          (0xff)
@@ -115,7 +106,7 @@ struct sRgbcData
 #define APDS9950_RGBC_GAIN_60X          APDS9950_CONTROL_AGAIN3
 
 u32 apds9950_rgbc_init(u8 atime, u8 wtime, u8 rgbc_gain);
-void apds9950_rgbc_read(struct sRgbcData *data);
+void apds9950_rgbc_read(u16 data[4]);
 
 u8 apds9950_read_reg(u8 reg);
 u16 apds9950_read_reg16(u8 start_reg);
