@@ -27,7 +27,7 @@ pca9548_reset(void)
 void
 pca9548_set_bus(u32 bus_id)
 {
-    pca9548_reset();
+    //pca9548_reset();
 
     i2cStart();
     i2cWrite(PCA9548_ADDRESS);

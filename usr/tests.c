@@ -122,6 +122,7 @@ ss_error_test_thread()
 {
     struct sRgbcData raw;
     u32 total_tests = 0;
+    u32 last_tests = 0;
     u32 reset_cnt[AERIS_SS_COUNT];
     u32 error_cnt[AERIS_SS_COUNT][4]; // 128 bytes
 
@@ -149,8 +150,8 @@ ss_error_test_thread()
                 ss_has_high_error(raw.g) ||
                 ss_has_high_error(raw.b)) {
 
-                //aeris_surface_sensor_init(i);
-                //aeris_surface_sensor_read_raw(i, &raw);
+                aeris_surface_sensor_init(i);
+                aeris_surface_sensor_read_raw(i, &raw);
                 reset_cnt[i] += 1;
             }
 
@@ -163,15 +164,17 @@ ss_error_test_thread()
         if (event_timer_get_flag(SS_PRINT_TIMER_ID)) {
             event_timer_clear_flag(SS_PRINT_TIMER_ID);
 
-            printf_("time=%u test_count=%u\n", timer_get_time(), total_tests);
+            printf_("time=%u test_count=%u tpi=%u\n",
+                    timer_get_time(), total_tests, total_tests - last_tests);
             for (u32 i = 0; i < AERIS_SS_COUNT; i++) {
                 printf_("[%u] [%u %u %u %u]\n", reset_cnt[i],
                         error_cnt[i][0], error_cnt[i][1],
                         error_cnt[i][2], error_cnt[i][3]);
             }
             printf_("\n\n");
+
+            last_tests = total_tests;
         }
-        timer_delay_ms(4);
     }
 
     aeris_rgbw_reset(AERIS_LED_W);
