@@ -13,6 +13,9 @@ struct sAerisRobot
 
 static struct sAerisRobot g_aeris;
 
+// TODO: I2C access mutex
+// static mutex_t g_i2c_mutex;
+
 
 u32
 aeris_init(void)
@@ -346,6 +349,19 @@ aeris_surface_sensor_read_raw(u32 id, u16 raw[4])
     if ((1<<id) & AERIS_SS_ENABLE) {
         pca9548_set_bus(id);
         apds9950_rgbc_read(raw);
+
+        #ifdef AERIS_SS_FAILSAFE
+        if (raw[0] > AERIS_SS_MAX_VALUE || raw[1] > AERIS_SS_MAX_VALUE ||
+            raw[2] > AERIS_SS_MAX_VALUE || raw[3] > AERIS_SS_MAX_VALUE) {
+            pca9548_reset();
+            pca9548_set_bus(id);
+            apds9950_rgbc_read(raw);
+
+            #ifdef AERIS_SS_FAILSAFE_INDICATOR
+            aeris_rgbw_toggle(AERIS_SS_FAILSAFE_INDICATOR);
+            #endif
+        }
+        #endif /* AERIS_SS_FAILSAFE */
     } else {
         raw[0] = 0;
         raw[1] = 0;

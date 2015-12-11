@@ -17,6 +17,20 @@
 ///-----------------------------------------------------------------------------
 
 
+/* If defined, try to reinitialize surface sensor if any of the read values
+ * is out of range.
+ */
+//#define AERIS_SS_FAILSAFE               (1)
+
+/* If defined, toggle given aeris led on reinitialization. */
+#define AERIS_SS_FAILSAFE_INDICATOR     AERIS_LED_R
+
+/* Motors PWM constants */
+#define AERIS_MOTORS_PWM_BASE_CLOCK     SystemCoreClock /* defined by device */
+#define AERIS_MOTORS_PWM_FREQUENCY      (10000)
+#define AERIS_MOTORS_PWM_PERIOD         ((SystemCoreClock/AERIS_MOTORS_PWM_FREQUENCY) - 1)
+
+
 ///-----------------------------------------------------------------------------
 ///
 /// Main Board pin definitions
@@ -77,10 +91,6 @@ u32 aeris_init(void);
 
 
 /* Motor API */
-#define AERIS_MOTORS_PWM_BASE_CLOCK     SystemCoreClock /* defined by device */
-#define AERIS_MOTORS_PWM_FREQUENCY      (10000)
-#define AERIS_MOTORS_PWM_PERIOD         ((SystemCoreClock/AERIS_MOTORS_PWM_FREQUENCY) - 1)
-
 #define AERIS_MOTORS_MAX_SPEED          ((i32)100)
 
 struct sAerisMotors
@@ -99,7 +109,7 @@ struct sAerisMotors aeris_motors_state(void);
 #define AERIS_LED_G                     AERIS_RGB_LED_2
 #define AERIS_LED_B                     AERIS_RGB_LED_3
 #define AERIS_LED_W                     (AERIS_WHITE_LED>>4)
-#define AERIS_LED_ALL                   (0x72)
+#define AERIS_LED_ALL                   (0x0072)
 
 void aeris_rgbw_set(u16 leds);
 void aeris_rgbw_reset(u16 leds);
@@ -113,7 +123,7 @@ u16 aeris_rgbw_state(void);
 u8 aeris_key_state(void);
 
 
-/* IMU API */
+/* TODO: IMU API */
 
 struct sAerisIMU
 {
@@ -126,12 +136,13 @@ struct sAerisIMU
     i16 temp;
 };
 
-// TODO:
 void aeris_imu_read(struct sAerisIMU *data);
+
 
 /* Surface sensors API */
 
 #define AERIS_SS_COUNT                  ((u32)8)
+#define AERIS_SS_MAX_VALUE              ((u16)1024)
 
 #define AERIS_SS_FRONT_RIGHT            ((u32)0)
 #define AERIS_SS_FRONT_RIGHT_CENTER     ((u32)1)
