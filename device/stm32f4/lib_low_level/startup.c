@@ -8,7 +8,7 @@ extern uint32_t __data_start__[], __data_end__[];
 extern uint32_t __bss_start__[], __bss_end__[];
 extern uint32_t __etext[];                // End of code/flash
 
-void _reset_init(void)    __attribute__((naked, aligned(2)));
+void _reset_init(void)    __attribute__((naked, aligned(4)));
 extern int main(void);
 
 

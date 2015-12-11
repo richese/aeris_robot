@@ -1,5 +1,5 @@
 {
-  "cmd": "make",
+  "cmd": "make -j 4",
   "name": "Build",
   "sh": true,
   "cwd": "{PROJECT_PATH}/build",
@@ -9,13 +9,13 @@
   "keymap": "f5",
   "targets": {
     "Rebuild": {
-      "cmd": "make -B",
+      "cmd": "make -B -j 4",
       "sh": true,
       "cwd": "{PROJECT_PATH}/build",
       "errorMatch": [
         "(?<file>[./ \\w]+):(?<line>\\d+):(?<col>\\d+):"
       ],
-      "keymap": "f6"
+      "keymap": "shift-f5"
     },
     "Flash: Tests": {
       "cmd": "./stm32f_write_dfu_usb.sh build/tests.bin",

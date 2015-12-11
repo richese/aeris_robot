@@ -10,6 +10,8 @@ set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 find_program(ARM-CC arm-none-eabi-gcc)
 find_program(ARM-CXX arm-none-eabi-g++)
 find_program(ARM-OBJCOPY arm-none-eabi-objcopy)
+find_program(ARM-OBJDUMP arm-none-eabi-objdump)
+
 CMAKE_FORCE_C_COMPILER("${ARM-CC}" GNU)
 CMAKE_FORCE_CXX_COMPILER("${ARM-CXX}" GNU)
 

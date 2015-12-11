@@ -21,4 +21,9 @@ foreach(program ${TARGETS})
         COMMENT "Translating ${CMAKE_BINARY_DIR}/${program}.bin"
         COMMAND ${ARM-OBJCOPY} -O binary "${CMAKE_BINARY_DIR}/${program}.elf" "${CMAKE_BINARY_DIR}/${program}.bin"
     )
+    add_custom_command(TARGET ${program}
+        POST_BUILD
+        COMMENT "Disassembling ${CMAKE_BINARY_DIR}/${program}.asm"
+        COMMAND ${ARM-OBJDUMP} --disassemble "${CMAKE_BINARY_DIR}/${program}.elf" > "${CMAKE_BINARY_DIR}/${program}.asm"
+    )
 endforeach()

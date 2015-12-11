@@ -7,7 +7,7 @@
 
 
 #define PCA9548_RESET_GPIO_BASE        GPIOB
-#define PCA9548_RESET_GPIO_PIN         (1<<1)
+#define PCA9548_RESET_GPIO_PIN         (0x0002)
 
 #define PCA9548_ADDRESS                (0xE0)
 

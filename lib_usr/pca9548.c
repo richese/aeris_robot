@@ -19,7 +19,7 @@ void
 pca9548_reset(void)
 {
     GPIO_ResetBits(PCA9548_RESET_GPIO_BASE, PCA9548_RESET_GPIO_PIN);
-    timer_delay_loops(10000);
+    timer_delay_loops(100);
     GPIO_SetBits(PCA9548_RESET_GPIO_BASE, PCA9548_RESET_GPIO_PIN);
     timer_delay_loops(10000);
 }
